@@ -50,9 +50,9 @@
 	 }
 	
 	//2.Use app id,secret and redirect url 
-	$app_id = '';
-	$app_secret = '';
-	$redirect_url='http://packetcode.com/apps/fbloginlogout/';
+	$app_id = '624449367686374';
+	$app_secret = '45e02d54f428fb89a0e5e4821e80c408';
+	$redirect_url='https://ogrencievlerifb.herokuapp.com/';
 
 	//3.Initialize application, create helper object and get fb sess
 	 FacebookSession::setDefaultApplication($app_id,$app_secret);
@@ -65,7 +65,7 @@
 	}
 
 	//logout
-	$logout = 'http://packetcode.com/apps/newfblogin&logout=true';
+	$logout = 'https://ogrencievlerifb.herokuapp.com/newfblogin&logout=true';
 
 	//4. if fb sess exists echo name 
 	 	if(isset($sess)){
