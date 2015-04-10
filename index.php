@@ -1,82 +1,103 @@
 <?php
-// Must pass session data for the library to work (only if not already included in your app)
-session_start();
+/*	FACEBOOK LOGIN + LOGOUT - PHP SDK V4.0
+ *	file 			- index.php
+ * 	Developer 		- Krishna Teja G S
+ *	Website			- http://packetcode.com/apps/fblogin-basic/
+ *	Date 			- 27th Sept 2014
+ *	license			- GNU General Public License version 2 or later
+*/
 
-// Facebook app settings
-$app_id = '624449367686374';
-$app_secret = '45e02d54f428fb89a0e5e4821e80c408';
-$redirect_uri = "https://ogrencievlerifb.herokuapp.com/";
+/* INCLUSION OF LIBRARY FILEs*/
+	require_once( 'lib/Facebook/FacebookSession.php');
+	require_once( 'lib/Facebook/FacebookRequest.php' );
+	require_once( 'lib/Facebook/FacebookResponse.php' );
+	require_once( 'lib/Facebook/FacebookSDKException.php' );
+	require_once( 'lib/Facebook/FacebookRequestException.php' );
+	require_once( 'lib/Facebook/FacebookRedirectLoginHelper.php');
+	require_once( 'lib/Facebook/FacebookAuthorizationException.php' );
+	require_once( 'lib/Facebook/GraphObject.php' );
+	require_once( 'lib/Facebook/GraphUser.php' );
+	require_once( 'lib/Facebook/GraphSessionInfo.php' );
+	require_once( 'lib/Facebook/Entities/AccessToken.php');
+	require_once( 'lib/Facebook/HttpClients/FacebookCurl.php' );
+	require_once( 'lib/Facebook/HttpClients/FacebookHttpable.php');
+	require_once( 'lib/Facebook/HttpClients/FacebookCurlHttpClient.php');
 
-// Requested permissions for the app - optional
-$permissions = array(
-  'email',
-  'user_location',
-  'user_birthday'
-);
+/* USE NAMESPACES */
+	
+	use Facebook\FacebookSession;
+	use Facebook\FacebookRedirectLoginHelper;
+	use Facebook\FacebookRequest;
+	use Facebook\FacebookResponse;
+	use Facebook\FacebookSDKException;
+	use Facebook\FacebookRequestException;
+	use Facebook\FacebookAuthorizationException;
+	use Facebook\GraphObject;
+	use Facebook\GraphUser;
+	use Facebook\GraphSessionInfo;
+	use Facebook\FacebookHttpable;
+	use Facebook\FacebookCurlHttpClient;
+	use Facebook\FacebookCurl;
 
-// Define the root directoy
-define( 'ROOT', dirname( __FILE__ ) . '/' );
+/*PROCESS*/
+	
+	//1.Stat Session
+	 session_start();
 
-// Autoload the required files
-require_once( ROOT . 'facebook-php-sdk-v4-4.0-dev/autoload.php' );
+	//check if users wants to logout
+	 if(isset($_REQUEST['logout'])){
+	 	unset($_SESSION['fb_token']);
+	 }
+	
+	//2.Use app id,secret and redirect url 
+	$app_id = '';
+	$app_secret = '';
+	$redirect_url='http://packetcode.com/apps/fbloginlogout/';
 
-use Facebook\FacebookSession;
-use Facebook\FacebookRedirectLoginHelper;
+	//3.Initialize application, create helper object and get fb sess
+	 FacebookSession::setDefaultApplication($app_id,$app_secret);
+	 $helper = new FacebookRedirectLoginHelper($redirect_url);
+	 $sess = $helper->getSessionFromRedirect();
 
-// Initialize the SDK
-FacebookSession::setDefaultApplication( $app_id, $app_secret );
+	//check if facebook session exists
+	if(isset($_SESSION['fb_token'])){
+	 	$sess = new FacebookSession($_SESSION['fb_token']);
+	}
 
-// Create the login helper and replace REDIRECT_URI with your URL
-// Use the same domain you set for the apps 'App Domains'
-// e.g. $helper = new FacebookRedirectLoginHelper( 'http://mydomain.com/redirect' );
-$helper = new FacebookRedirectLoginHelper( $redirect_uri );
+	//logout
+	$logout = 'http://packetcode.com/apps/newfblogin&logout=true';
 
-// Check if existing session exists
-if ( isset( $_SESSION ) && isset( $_SESSION['fb_token'] ) ) {
-  // Create new session from saved access_token
-  $session = new FacebookSession( $_SESSION['fb_token'] );
+	//4. if fb sess exists echo name 
+	 	if(isset($sess)){
+	 		//store the token in the php session
+	 		$_SESSION['fb_token']=$sess->getToken();
+	 		//create request object,execute and capture response
+	 		$request = new FacebookRequest($sess,'GET','/me');
+			// from response get graph object
+			$response = $request->execute();
+			$graph = $response->getGraphObject(GraphUser::classname());
+			// use graph object methods to get user details
+			$name = $graph->getName();
+			$id = $graph->getId();
+			$image = 'https://graph.facebook.com/'.$id.'/picture?width=300';
+			$email = $graph->getProperty('email');
+			echo "hi $name <br>";
+			echo "your email is $email <br><Br>";
+			echo "<img src='$image' /><br><br>";
+			echo "<a href='".$logout."'><button>Logout</button></a>";
+	 	}else{
+			//else echo login
+	 		echo '<a href="'.$helper->getLoginUrl(array('email')).'" >Login with facebook</a>';
+	 	}
 
-    // Validate the access_token to make sure it's still valid
-    try {
-      if ( ! $session->validate() ) {
-        $session = null;
-      }
-    } catch ( Exception $e ) {
-      // Catch any exceptions
-      $session = null;
-    }
-} else {
-  // No session exists
-  try {
-    $session = $helper->getSessionFromRedirect();
-  } catch( FacebookRequestException $ex ) {
 
-    // When Facebook returns an error
-  } catch( Exception $ex ) {
 
-    // When validation fails or other local issues
-    echo $ex->message;
-  }
-}
 
-// Check if a session exists
-if ( isset( $session ) ) {
 
-  // Save the session
-  $_SESSION['fb_token'] = $session->getToken();
 
-  // Create session using saved token or the new one we generated at login
-  $session = new FacebookSession( $session->getToken() );
 
-  // Create the logout URL (logout page should destroy the session)
-  $logoutURL = $helper->getLogoutUrl( $session, 'https://ogrencievlerifb.herokuapp.com/logout' );
 
-  echo '<a href="' . $logoutURL . '">Log out</a>';
-} else {
-  // No session
 
-  // Get login URL
-  $loginUrl = $helper->getLoginUrl( $permissions );
 
-  echo '<a href="' . $loginUrl . '">Log in</a>';
-}
+
+	
