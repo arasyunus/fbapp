@@ -38,9 +38,9 @@
 	//1.Stat Session
 	 session_start();
 	//2.Use app id,secret and redirect url
-	 $app_id = '906233676099560';
-	 $app_secret = '5281f8d25677ced12934a712a4f833e5';
-	 $redirect_url='http://localhost/fb/';
+	 $app_id = '624449367686374';
+	 $app_secret = '45e02d54f428fb89a0e5e4821e80c408';
+	 $redirect_url='https://ogrencievlerifb.herokuapp.com';
 	 
 	 //3.Initialize application, create helper object and get fb sess
 	 FacebookSession::setDefaultApplication($app_id,$app_secret);
@@ -63,7 +63,7 @@ if($sess) {
     $sess, 'POST', '/me/feed', array(
       'name' => 'Facebook API: Posting a Status Update Using PHP SDK 4.0.x',
       'caption' => "I'm rewriting old tutorials to work with the new PHP SDK 4.0 and Graph API 2.0.",
-      'link' => 'https://www.webniraj.com/2014/05/29/facebook-api-p…-php-sdk-4-0-x/',
+      'link' => 'https://ogrencievlerifb.herokuapp.com',
       'message' => 'Check out my new tutorial'
     )
   ))->execute()->getGraphObject()->asArray();
